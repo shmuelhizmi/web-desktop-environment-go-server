@@ -3,23 +3,13 @@ package managers
 import (
 	"errors"
 	"github.com/fatih/color"
-	"github.com/shmuelhizmi/web-desktop-environment-go-server/utils"
+	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
 	"net"
 	"strconv"
 )
 
-type PortMangerDependencies struct {
-	logger utils.Logger
-	settingsManager SettingsManger
-}
-
-type PortManager struct {
-	getDesktopPort func() (error, int32)
-	getAppPort     func() (error, int32)
-}
-
-func CreatePortManager(dependencies PortMangerDependencies) PortManager {
-	logger := dependencies.logger.Mount("port manager", color.BgBlue)
+func CreatePortManager(dependencies types.PortMangerDependencies) types.PortManager {
+	logger := dependencies.Logger.Mount("port manager", color.BgBlue)
 	isPortAvailable := func(port string) bool {
 		ln, err := net.Listen("tcp", ":"+port)
 		if err != nil {
@@ -40,13 +30,13 @@ func CreatePortManager(dependencies PortMangerDependencies) PortManager {
 		}
 		return errors.New("no port available in range"), -1
 	}
-	return PortManager{
-		getDesktopPort: func() (error, int32) {
-			mainPort := dependencies.settingsManager.Settings().Network.Ports.MainPort
-			return getAvailablePort(mainPort, mainPort + 50)
+	return types.PortManager{
+		GetDesktopPort: func() (error, int32) {
+			mainPort := dependencies.SettingsManager.Settings().Network.Ports.MainPort
+			return getAvailablePort(mainPort, mainPort+50)
 		},
-		getAppPort: func() (error, int32) {
-			portSettings := dependencies.settingsManager.Settings().Network.Ports
+		GetAppPort: func() (error, int32) {
+			portSettings := dependencies.SettingsManager.Settings().Network.Ports
 			return getAvailablePort(portSettings.StartPort, portSettings.EndPort)
 		},
 	}

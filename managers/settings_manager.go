@@ -4,51 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/fatih/color"
+	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/utils"
 	"io/ioutil"
 	"os"
 	"path"
 )
 
-type SettingsManger struct {
-	Initialize          func()
-	IsInitialized       *bool
-	Settings            func() *SettingsObject
-	SetSettings         func(newSettings SettingsObject)
-	ListenToNewSettings func(listener func(newSettings *SettingsObject))
-}
-
-type SettingsManagerDependencies struct {
-	logger utils.Logger
-}
-
-const (
-	SettingsFolder = ".web-desktop-environment-config"
-	SettingsFile   = "settings.json"
-)
-
-type SettingsObject struct {
-	Desktop SettingsObjectDesktop `json:"desktop"`
-	Network SettingsObjectNetwork `json:"network"`
-}
-
-type SettingsObjectDesktop struct {
-	Theme            string `json:"theme"`
-	Background       string `json:"background"`
-	NativeBackground string `json:"nativeBackground"`
-}
-
-type SettingsObjectNetwork struct {
-	Ports SettingsObjectNetworkPorts `json:"ports"`
-}
-
-type SettingsObjectNetworkPorts struct {
-	MainPort  int32 `json:"mainPort"`
-	StartPort int32 `json:"startPort"`
-	EndPort   int32 `json:"endPort"`
-}
-
-func CreateSettingsUpdater(write <-chan SettingsObject, settingsFileFullPath string) {
+func CreateSettingsUpdater(write <-chan types.SettingsObject, settingsFileFullPath string) {
 	for currentWrite := range write {
 		fileHandler, fileHandlerCreateError := os.Create(settingsFileFullPath)
 		utils.Check(fileHandlerCreateError)
@@ -59,16 +22,16 @@ func CreateSettingsUpdater(write <-chan SettingsObject, settingsFileFullPath str
 	}
 }
 
-func CreateSettingsManager(dependencies SettingsManagerDependencies) SettingsManger {
-	logger := dependencies.logger.Mount("settings manager", color.FgHiMagenta)
-	defaultSettings := SettingsObject{
-		Desktop: SettingsObjectDesktop{
+func CreateSettingsManager(dependencies types.SettingsManagerDependencies) types.SettingsManger {
+	logger := dependencies.Logger.Mount("settings manager", color.FgHiMagenta)
+	defaultSettings := types.SettingsObject{
+		Desktop: types.SettingsObjectDesktop{
 			Theme:            "transparentDark",
 			Background:       "url(https://picsum.photos/id/1039/1920/1080)",
 			NativeBackground: "https://picsum.photos/id/237/1080/1920",
 		},
-		Network: SettingsObjectNetwork{
-			Ports: SettingsObjectNetworkPorts{
+		Network: types.SettingsObjectNetwork{
+			Ports: types.SettingsObjectNetworkPorts{
 				MainPort:  5000,
 				StartPort: 9200,
 				EndPort:   9400,
@@ -77,13 +40,13 @@ func CreateSettingsManager(dependencies SettingsManagerDependencies) SettingsMan
 	}
 	settings := defaultSettings
 	isInitialized := false
-	var newSettingsListeners []func(newSettings *SettingsObject)
+	var newSettingsListeners []func(newSettings *types.SettingsObject)
 	homedir, _ := os.UserHomeDir()
-	settingsFolderFullPath := path.Join(homedir, SettingsFolder)
-	settingsFileFullPath := path.Join(settingsFolderFullPath, SettingsFile)
-	settingsWriteChannel := make(chan SettingsObject)
+	settingsFolderFullPath := path.Join(homedir, types.SettingsFolder)
+	settingsFileFullPath := path.Join(settingsFolderFullPath, types.SettingsFile)
+	settingsWriteChannel := make(chan types.SettingsObject)
 	go CreateSettingsUpdater(settingsWriteChannel, settingsFileFullPath)
-	return SettingsManger{
+	return types.SettingsManger{
 		Initialize: func() {
 			_, folderStatErr := os.Stat(settingsFolderFullPath)
 			utils.Check(folderStatErr)
@@ -107,13 +70,13 @@ func CreateSettingsManager(dependencies SettingsManagerDependencies) SettingsMan
 			isInitialized = true
 		},
 		IsInitialized: &isInitialized,
-		Settings: func() *SettingsObject {
+		Settings: func() *types.SettingsObject {
 			if !isInitialized {
 				utils.Check(errors.New("trying to read settings before settings manager is initialized"))
 			}
 			return &settings
 		},
-		SetSettings: func(newSettings SettingsObject) {
+		SetSettings: func(newSettings types.SettingsObject) {
 			if !isInitialized {
 				utils.Check(errors.New("trying to read settings before settings manager is initialized"))
 			}
@@ -127,7 +90,7 @@ func CreateSettingsManager(dependencies SettingsManagerDependencies) SettingsMan
 				listener(&settings)
 			}
 		},
-		ListenToNewSettings: func(listener func(newSettings *SettingsObject)) {
+		ListenToNewSettings: func(listener func(newSettings *types.SettingsObject)) {
 			newSettingsListeners = append(newSettingsListeners, listener)
 		},
 	}
