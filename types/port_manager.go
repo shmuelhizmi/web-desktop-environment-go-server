@@ -1,9 +1,7 @@
 package types
 
-import "github.com/shmuelhizmi/web-desktop-environment-go-server/utils"
-
 type PortMangerDependencies struct {
-	Logger          utils.Logger
+	Logger          Logger
 	SettingsManager SettingsManger
 }
 

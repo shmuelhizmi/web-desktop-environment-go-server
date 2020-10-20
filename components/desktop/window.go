@@ -1,29 +1,66 @@
 package desktop
 
-import "github.com/shmuelhizmi/web-desktop-environment-go-server/types"
+import (
+	"encoding/json"
+	react_fullstack_go_server "github.com/shmuelhizmi/react-fullstack-go-server"
+	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
+)
 
 func CreateWindow(input types.CreateWindowParameters) types.CreateWindowReturn {
-	isCanceled := false
-	windowState := input.State
-	windowView := input.View(0, "Window", nil)
-	windowView.Params["name"] = input.Name
-	windowView.Params["icon"] = input.Icon
-	windowView.Params["title"] = input.Title
-	windowView.Params["window"] = windowState
-	settings := input.DesktopManager.SettingsManager.Settings()
-	updateWindowParamsFromSettingsManager := func() {
-		if !isCanceled {
-			windowView.Params["background"] = settings.Desktop.Background
-		}
+	updateTitle := func(newTitle string) {
+		//mock
 	}
-	updateWindowParamsFromSettingsManager()
+
 	return types.CreateWindowReturn{
-		UpdateTitle: func(newTitle string) {
-			if !isCanceled {
-				windowView.Params["title"] = newTitle
-				windowView.Update()
+		UpdateTitle: &updateTitle,
+		Component: func(params *react_fullstack_go_server.ComponentParams) {
+			isCanceled := false
+			windowState := input.State
+			windowView := params.View(0, "Window", nil)
+			windowView.Params["name"] = input.Name
+			windowView.Params["icon"] = input.Icon
+			windowView.Params["title"] = input.Title
+			windowView.Params["window"] = windowState
+			settings := input.DesktopManager.SettingsManager.Settings()
+			updateWindowParamsFromSettingsManager := func() {
+				if !isCanceled {
+					windowView.Params["background"] = settings.Desktop.Background
+				}
 			}
+			updateWindowParamsFromSettingsManager()
+			windowView.On("setWindowState", func(props [][]byte) interface{} {
+				var newWindowState struct {
+					Minimized bool           `json:"minimized"`
+					Position  types.Position `json:"position"`
+					Size      types.Size     `json:"size"`
+				}
+				json.Unmarshal(props[0], &newWindowState)
+				windowState.Position = newWindowState.Position
+				windowState.Height = newWindowState.Size.Height
+				windowState.Width = newWindowState.Size.Width
+				windowState.Position = newWindowState.Position
+				windowView.Params["window"] = windowState
+				windowView.Update()
+				return nil
+			})
+			input.DesktopManager.SettingsManager.ListenToNewSettings(func(_ *types.SettingsObject) {
+				if !isCanceled {
+					updateWindowParamsFromSettingsManager()
+				}
+			})
+			windowView.On("onClose", func(_ [][]byte) interface{} {
+				input.DesktopManager.ApplicationsManager.CancelApp(input.AppId)
+				return nil
+			})
+			updateTitle = func(newTitle string) {
+				if !isCanceled {
+					windowView.Params["title"] = newTitle
+				}
+			}
+			windowView.Start()
+			params.Run(input.App, windowView)
+			<-params.Cancel
+			isCanceled = true
 		},
-		Cancel: nil,
 	}
 }

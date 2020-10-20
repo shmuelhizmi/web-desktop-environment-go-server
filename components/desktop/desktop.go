@@ -2,6 +2,7 @@ package desktop
 
 import (
 	"encoding/json"
+	"github.com/fatih/color"
 	react_fullstack_go_server "github.com/shmuelhizmi/react-fullstack-go-server"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
 )
@@ -9,6 +10,7 @@ import (
 func CreateDesktop(desktopManager types.DesktopManager) react_fullstack_go_server.Component {
 	return func(params *react_fullstack_go_server.ComponentParams) {
 		settings := desktopManager.SettingsManager.Settings()
+		desktopLogger := desktopManager.MountLogger("desktop", color.FgHiCyan)
 		themeProvider := params.View(0, "ThemeProvider", nil)
 		updateThemeProviderParamsFromSettings := func() {
 			themeProvider.Params["theme"] = settings.Desktop.Theme
@@ -24,14 +26,14 @@ func CreateDesktop(desktopManager types.DesktopManager) react_fullstack_go_serve
 		runningApps := desktopManager.ApplicationsManager.RunningApps
 		registeredApps := desktopManager.ApplicationsManager.RegisteredApps
 		updateDesktopParamsFromWindowManager := func() {
-			apps := make([]types.App, 0, len(*registeredApps))
+			apps := make([]types.RegisteredApp, 0, len(*registeredApps))
 			for appName, app := range *registeredApps {
-				apps = append(apps, types.App{
-					Name:        app.Name,
-					Icon:        app.Icon,
-					NativeIcon:  app.NativeIcon,
-					Flow:        appName,
-					Description: app.Description,
+				apps = append(apps, types.RegisteredApp{
+					Name:           app.Name,
+					Icon:           app.Icon,
+					NativeIcon:     app.NativeIcon,
+					RegisteredName: appName,
+					Description:    app.Description,
 				})
 			}
 			openApps := make([]types.OpenApp, 0, len(*runningApps))
@@ -53,13 +55,14 @@ func CreateDesktop(desktopManager types.DesktopManager) react_fullstack_go_serve
 			desktop.Params["nativeBackground"] = settings.Desktop.NativeBackground
 		}
 		updateDesktopParamsFromSettingsManager()
-		desktop.On("onLaunchApp", func(params [][]byte) interface{} {
+		desktop.On("onLaunchApp", func(props [][]byte) interface{} {
 			var app struct {
 				App    string      `json:"flow"`
-				Params interface{} `json:"params"`
+				Params interface{} `json:"params"` // deprecated
 			}
-			json.Unmarshal(params[0], &app)
-			desktopManager.ApplicationsManager.RunApp(app.App, desktopManager, &app.Params)
+			json.Unmarshal(props[0], &app)
+			desktopLogger.Info("launching app " + app.App)
+			desktopManager.ApplicationsManager.RunApp(app.App, desktopManager, nil)
 			return nil
 		})
 		desktop.On("onCloseApp", func(params [][]byte) interface{} {
@@ -77,5 +80,6 @@ func CreateDesktop(desktopManager types.DesktopManager) react_fullstack_go_serve
 			updateDesktopParamsFromWindowManager()
 			desktop.Update()
 		})
+		<-params.Cancel
 	}
 }

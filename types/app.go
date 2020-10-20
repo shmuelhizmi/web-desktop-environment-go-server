@@ -11,13 +11,15 @@ type RunningAppData struct {
 	NativeIcon NativeIcon
 }
 
+type App func(desktopManager DesktopManager, AppId int64, input interface{}) (component react_fullstack_go_server.Component)
+
 type AppRegistrationData struct {
 	Icon         Icon
 	NativeIcon   NativeIcon
 	Name         string
 	DefaultInput interface{}
 	Description  string
-	App          func(desktopManager DesktopManager, input interface{}) (component react_fullstack_go_server.Component)
+	App          App
 }
 
 type OpenApp struct {
@@ -28,10 +30,10 @@ type OpenApp struct {
 	Id         int64      `json:"id"`
 }
 
-type App struct {
-	Name        string     `json:"name"`
-	Icon        Icon       `json:"icon"`
-	NativeIcon  NativeIcon `json:"nativeIcon"`
-	Flow        string     `json:"flow"`
-	Description string     `json:"description"`
+type RegisteredApp struct {
+	Name           string     `json:"name"`
+	Icon           Icon       `json:"icon"`
+	NativeIcon     NativeIcon `json:"nativeIcon"`
+	RegisteredName string     `json:"flow"`
+	Description    string     `json:"description"`
 }

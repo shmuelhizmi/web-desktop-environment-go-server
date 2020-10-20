@@ -32,18 +32,18 @@ func CreateApplicationsManager(dependencies types.ApplicationsManagerDependencie
 				return nil, errors.New("trying to run a non existing app")
 			}
 			appInput := app.DefaultInput
-			if *input != nil {
+			if input != nil {
 				appInput = *input
 			}
+			appId := appIndex
+			appIndex++
 			getAppPortError, appPort := dependencies.PortManager.GetAppPort()
 			if getAppPortError != nil {
 				return nil, getAppPortError
 			}
-			appComponent := app.App(desktopManager, appInput)
+			appComponent := app.App(desktopManager, appId, appInput)
 			appServer := gosocketio.NewServer(transport.GetDefaultWebsocketTransport())
 			runningAppComponentInstance := react_fullstack_go_server.App(appServer, appComponent)
-			appId := appIndex
-			appIndex++
 			removeAppFromRunningApps := func() {
 				for appIndex, currentApp := range runningApps {
 					if currentApp.Id == appId {
@@ -75,16 +75,25 @@ func CreateApplicationsManager(dependencies types.ApplicationsManagerDependencie
 			callAppRunningAppsUpdateListeners()
 			serveMux := http.NewServeMux()
 			serveMux.Handle("/socket.io/", appServer)
-			log.Panic(http.ListenAndServe(":"+strconv.FormatInt(int64(appPort), 10), serveMux))
+			for http.ListenAndServe(":"+strconv.FormatInt(int64(appPort), 10), serveMux) != nil {
+				noPortAvailableError, newPort := desktopManager.PortManager.GetAppPort()
+				appPort = newPort
+				if noPortAvailableError != nil {
+					return nil, noPortAvailableError
+				}
+			}
+			log.Panic()
 			return appInstance, nil
 		},
 		CancelApp: func(id int64) {
-			for appIndex, app := range runningApps {
+			appIndex := -1
+			for currentAppIndex, app := range runningApps {
 				if app.Id == id {
-					app.Cancel()
-					runningApps = append(runningApps[:appIndex], runningApps[appIndex+1:]...)
-					callAppRunningAppsUpdateListeners()
+					appIndex = currentAppIndex
 				}
+			}
+			if appIndex != -1 {
+				runningApps[appIndex].Cancel()
 			}
 		},
 		RunningApps:    &runningApps,

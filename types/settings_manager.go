@@ -1,7 +1,5 @@
 package types
 
-import "github.com/shmuelhizmi/web-desktop-environment-go-server/utils"
-
 type SettingsManger struct {
 	Initialize          func()
 	IsInitialized       *bool
@@ -11,7 +9,7 @@ type SettingsManger struct {
 }
 
 type SettingsManagerDependencies struct {
-	Logger utils.Logger
+	Logger Logger
 }
 
 const (

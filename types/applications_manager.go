@@ -1,7 +1,5 @@
 package types
 
-import "github.com/shmuelhizmi/web-desktop-environment-go-server/utils"
-
 type ApplicationsManager struct {
 	RegisterApp               func(appName string, app AppRegistrationData)
 	RunApp                    func(name string, desktopManager DesktopManager, input *interface{}) (appInstance *AppInstance, error error)
@@ -13,7 +11,7 @@ type ApplicationsManager struct {
 
 type ApplicationsManagerDependencies struct {
 	PortManager PortManager
-	Logger      utils.Logger
+	Logger      Logger
 }
 
 type AppInstance struct {

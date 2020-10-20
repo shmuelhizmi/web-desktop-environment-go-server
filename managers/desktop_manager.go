@@ -7,8 +7,8 @@ import (
 
 func CreateDesktopManager() types.DesktopManager {
 	rootLogger := utils.CreateRootLogger()
-	portManager := CreatePortManager(types.PortMangerDependencies{Logger: rootLogger})
 	settingsManager := CreateSettingsManager(types.SettingsManagerDependencies{Logger: rootLogger})
+	portManager := CreatePortManager(types.PortMangerDependencies{Logger: rootLogger, SettingsManager: settingsManager})
 	applicationsManager := CreateApplicationsManager(types.ApplicationsManagerDependencies{
 		PortManager: portManager,
 		Logger:      rootLogger,

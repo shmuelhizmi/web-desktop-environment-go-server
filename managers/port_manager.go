@@ -4,12 +4,12 @@ import (
 	"errors"
 	"github.com/fatih/color"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
+	"github.com/shmuelhizmi/web-desktop-environment-go-server/utils"
 	"net"
-	"strconv"
 )
 
 func CreatePortManager(dependencies types.PortMangerDependencies) types.PortManager {
-	logger := dependencies.Logger.Mount("port manager", color.BgBlue)
+	logger := dependencies.Logger.Mount("port manager", color.FgRed)
 	isPortAvailable := func(port string) bool {
 		ln, err := net.Listen("tcp", ":"+port)
 		if err != nil {
@@ -21,7 +21,7 @@ func CreatePortManager(dependencies types.PortMangerDependencies) types.PortMana
 	getAvailablePort := func(port int32, maxPort int32) (error, int32) {
 		currentPort := port
 		for currentPort <= maxPort {
-			stringPort := strconv.FormatInt(int64(currentPort), 10)
+			stringPort := utils.Int32ToString(currentPort)
 			if isPortAvailable(stringPort) {
 				logger.Info("found port - " + stringPort)
 				return nil, currentPort
