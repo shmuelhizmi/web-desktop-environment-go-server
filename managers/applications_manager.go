@@ -2,6 +2,7 @@ package managers
 
 import (
 	"errors"
+	"github.com/fatih/color"
 	gosocketio "github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
 	react_fullstack_go_server "github.com/shmuelhizmi/react-fullstack-go-server"
@@ -12,6 +13,7 @@ import (
 )
 
 func CreateApplicationsManager(dependencies types.ApplicationsManagerDependencies) (appManager types.ApplicationsManager) {
+	logger := dependencies.Logger.Mount("applications manager", color.FgMagenta)
 	var runningApps []types.AppInstance
 	var runningAppsUpdateListener []func()
 	var appIndex int64 = 0
@@ -41,7 +43,9 @@ func CreateApplicationsManager(dependencies types.ApplicationsManagerDependencie
 			if getAppPortError != nil {
 				return nil, getAppPortError
 			}
-			appComponent := app.App(desktopManager, appId, appInput)
+			appDesktopManager := desktopManager
+			appDesktopManager.MountLogger = logger.Mount
+			appComponent := app.App(appDesktopManager, appId, appInput)
 			appServer := gosocketio.NewServer(transport.GetDefaultWebsocketTransport())
 			runningAppComponentInstance := react_fullstack_go_server.App(appServer, appComponent)
 			removeAppFromRunningApps := func() {

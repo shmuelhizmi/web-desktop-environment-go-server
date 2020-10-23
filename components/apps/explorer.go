@@ -2,6 +2,7 @@ package apps
 
 import (
 	"encoding/json"
+	"github.com/fatih/color"
 	react_fullstack_go_server "github.com/shmuelhizmi/react-fullstack-go-server"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/components/desktop"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
@@ -67,6 +68,8 @@ func CreateExplorerApp() types.AppRegistrationData {
 
 func ExplorerApp(desktopManager types.DesktopManager, input types.ExplorerInput) (component react_fullstack_go_server.Component) {
 	return func(params *react_fullstack_go_server.ComponentParams) {
+		logger := desktopManager.MountLogger("explorer", color.BgBlue, color.FgBlack)
+		logger.Info("running explorer")
 		currentPath := input.Path
 		explorerView := params.View(0, "Explorer", nil)
 		explorerView.Params["platformPathSeparator"] = string(os.PathSeparator)
@@ -83,6 +86,31 @@ func ExplorerApp(desktopManager types.DesktopManager, input types.ExplorerInput)
 			updateExplorerWithCurrentPath()
 			explorerView.Update()
 			return nil
+		})
+		explorerView.On("onCopy", func(props [][]byte) interface{} {
+			var arguments struct {
+				NewPath      string `json:"newPath"`
+				OriginalPath string `json:"originalPath"`
+			}
+			json.Unmarshal(props[0], &arguments)
+			copyError := utils.Copy(arguments.OriginalPath, arguments.NewPath)
+			if copyError == nil {
+				updateExplorerWithCurrentPath()
+				explorerView.Update()
+			} else {
+				logger.Error("fail to copy " + arguments.OriginalPath + " to " + arguments.NewPath)
+				logger.Error(copyError.Error())
+			}
+			return nil
+		})
+		explorerView.On("onRequestDownloadLink", func(props [][]byte) interface{} {
+			return struct {
+				Path string `json:"path"`
+				Port int32  `json:"port"`
+			}{
+				Path: "/fwafafwawaf",
+				Port: 0,
+			}
 		})
 		explorerView.Start()
 		<-params.Cancel

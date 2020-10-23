@@ -52,11 +52,11 @@ func CreateLogger(printLevel func(), lastMessageTime *time.Time) types.Logger {
 		Warn: func(message string) {
 			log(message, color.FgYellow)
 		},
-		Mount: func(levelName string, levelColor color.Attribute) types.Logger {
+		Mount: func(levelName string, levelColor ...color.Attribute) types.Logger {
 			return CreateLogger(func() {
 				printLevel()
 				fmt.Print(":")
-				_, _ = color.New(levelColor).Print(levelName)
+				_, _ = color.New(levelColor...).Print(levelName)
 			}, lastMessageTime)
 		},
 	}

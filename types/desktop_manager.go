@@ -8,5 +8,5 @@ type DesktopManager struct {
 	PortManager         PortManager
 	SettingsManager     SettingsManger
 	ApplicationsManager ApplicationsManager
-	MountLogger         func(levelName string, levelColor color.Attribute) Logger
+	MountLogger         func(levelName string, levelColor ...color.Attribute) Logger
 }

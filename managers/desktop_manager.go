@@ -1,12 +1,13 @@
 package managers
 
 import (
+	"github.com/fatih/color"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/utils"
 )
 
 func CreateDesktopManager() types.DesktopManager {
-	rootLogger := utils.CreateRootLogger()
+	rootLogger := utils.CreateRootLogger().Mount("desktop manager", color.FgGreen)
 	settingsManager := CreateSettingsManager(types.SettingsManagerDependencies{Logger: rootLogger})
 	portManager := CreatePortManager(types.PortMangerDependencies{Logger: rootLogger, SettingsManager: settingsManager})
 	applicationsManager := CreateApplicationsManager(types.ApplicationsManagerDependencies{
