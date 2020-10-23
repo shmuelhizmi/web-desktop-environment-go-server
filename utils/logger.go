@@ -33,8 +33,9 @@ func CreateLogger(printLevel func(), lastMessageTime *time.Time) types.Logger {
 	}
 	log := func(message string, messageColor color.Attribute) {
 		newTime := time.Now()
-		timeSinceLastMessage := newTime.Sub(*lastMessageTime).String()
-		lastMessageTime = &newTime
+		oldTime := *lastMessageTime
+		*lastMessageTime = newTime
+		timeSinceLastMessage := newTime.Sub(oldTime).String()
 		fmt.Print("[ ")
 		printLevel()
 		fmt.Print(" ]: ")

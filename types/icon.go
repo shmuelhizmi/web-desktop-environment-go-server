@@ -26,11 +26,11 @@ const (
 )
 
 type Icon struct {
-	Icon     string
-	IconType IconType
+	Icon     string   `json:"icon"`
+	IconType IconType `json:"type"`
 }
 
 type NativeIcon struct {
-	Icon     string
-	IconType NativeIconType
+	Icon     string         `json:"icon"`
+	IconType NativeIconType `json:"type"`
 }

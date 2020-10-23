@@ -70,6 +70,7 @@ func ExplorerApp(desktopManager types.DesktopManager, input types.ExplorerInput)
 		currentPath := input.Path
 		explorerView := params.View(0, "Explorer", nil)
 		explorerView.Params["platformPathSeparator"] = string(os.PathSeparator)
+		explorerView.Params["type"] = input.Type
 		updateExplorerWithCurrentPath := func() {
 			explorerView.Params["currentPath"] = currentPath
 			explorerView.Params["files"] = utils.ListFilesInDir(currentPath)
