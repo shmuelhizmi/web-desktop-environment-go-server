@@ -1,7 +1,6 @@
 package apps
 
 import (
-	"encoding/json"
 	"github.com/fatih/color"
 	react_fullstack_go_server "github.com/shmuelhizmi/react-fullstack-go-server"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/components/desktop"
@@ -12,7 +11,7 @@ import (
 
 func GetExplorerAppInfo() types.RegisteredApp {
 	return types.RegisteredApp{
-		Name: "explorer",
+		Name: "Explorer",
 		Icon: types.Icon{
 			Icon:     "FcFolder",
 			IconType: "icon",
@@ -71,29 +70,24 @@ func ExplorerApp(desktopManager types.DesktopManager, input types.ExplorerInput)
 		logger := desktopManager.MountLogger("explorer", color.BgBlue, color.FgBlack)
 		logger.Info("running explorer")
 		currentPath := input.Path
-		explorerView := params.View(0, "Explorer", nil)
+		explorerView := params.View(0, types.ExplorerViewName, nil)
 		explorerView.Params["platformPathSeparator"] = string(os.PathSeparator)
 		explorerView.Params["type"] = input.Type
 		updateExplorerWithCurrentPath := func() {
 			explorerView.Params["currentPath"] = currentPath
-			explorerView.Params["files"] = utils.ListFilesInDir(currentPath)
+			explorerView.Params["files"] = utils.FSListFilesInDir(currentPath)
 		}
 		updateExplorerWithCurrentPath()
-		explorerView.On("onChangeCurrentPath", func(props [][]byte) interface{} {
-			var newPath string
-			json.Unmarshal(props[0], &newPath)
+		explorerView.On("onChangeCurrentPath", func(newPath string) {
 			currentPath = newPath
 			updateExplorerWithCurrentPath()
 			explorerView.Update()
-			return nil
 		})
-		explorerView.On("onCopy", func(props [][]byte) interface{} {
-			var arguments struct {
-				NewPath      string `json:"newPath"`
-				OriginalPath string `json:"originalPath"`
-			}
-			json.Unmarshal(props[0], &arguments)
-			copyError := utils.Copy(arguments.OriginalPath, arguments.NewPath)
+		explorerView.On("onCopy", func(arguments struct {
+			NewPath      string `json:"newPath"`
+			OriginalPath string `json:"originalPath"`
+		}) {
+			copyError := utils.FSCopy(arguments.OriginalPath, arguments.NewPath)
 			if copyError == nil {
 				updateExplorerWithCurrentPath()
 				explorerView.Update()
@@ -101,9 +95,8 @@ func ExplorerApp(desktopManager types.DesktopManager, input types.ExplorerInput)
 				logger.Error("fail to copy " + arguments.OriginalPath + " to " + arguments.NewPath)
 				logger.Error(copyError.Error())
 			}
-			return nil
 		})
-		explorerView.On("onRequestDownloadLink", func(props [][]byte) interface{} {
+		explorerView.On("onRequestDownloadLink", func() interface{} {
 			return struct {
 				Path string `json:"path"`
 				Port int32  `json:"port"`
@@ -111,6 +104,39 @@ func ExplorerApp(desktopManager types.DesktopManager, input types.ExplorerInput)
 				Path: "/fwafafwawaf",
 				Port: 0,
 			}
+		})
+		explorerView.On("onCreateFile", func(path string) {
+			createFileError := utils.FSCreateEmptyFile(path)
+			if createFileError == nil {
+				updateExplorerWithCurrentPath()
+				explorerView.Update()
+			} else {
+				logger.Error("fail to create empty file " + path)
+				logger.Error(createFileError.Error())
+			}
+		})
+		explorerView.On("onCreateFolder", func(path string) {
+			createFolderError := utils.FSCreateFolder(path)
+			if createFolderError == nil {
+				updateExplorerWithCurrentPath()
+				explorerView.Update()
+			} else {
+				logger.Error("fail to create empty folder " + path)
+				logger.Error(createFolderError.Error())
+			}
+		})
+		explorerView.On("onDelete", func(path string) {
+			deleteError := utils.FSDelete(path)
+			if deleteError == nil {
+				updateExplorerWithCurrentPath()
+				explorerView.Update()
+			} else {
+				logger.Error("fail to delete " + path)
+				logger.Error(deleteError.Error())
+			}
+		})
+		explorerView.On("onSelect", func(path string) {
+			input.OnSelect(path)
 		})
 		explorerView.Start()
 		<-params.Cancel

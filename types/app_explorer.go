@@ -12,7 +12,7 @@ type ExplorerInput struct {
 	Path         string
 	IsCurrentApp bool
 	Type         ExplorerViewType
-	onSelect     func(path string)
+	OnSelect     func(path string)
 }
 
 type ExplorerFile struct {

@@ -10,7 +10,7 @@ import (
 	"syscall"
 )
 
-func ListFilesInDir(dir string) []types.ExplorerFile {
+func FSListFilesInDir(dir string) []types.ExplorerFile {
 	var files = make([]types.ExplorerFile, 0)
 	readResult, _ := ioutil.ReadDir(dir)
 	for _, file := range readResult {
@@ -23,7 +23,7 @@ func ListFilesInDir(dir string) []types.ExplorerFile {
 	return files
 }
 
-func CopyDirectory(scrDir, dest string) error {
+func FSCopyDirectory(scrDir, dest string) error {
 	entries, err := ioutil.ReadDir(scrDir)
 	if err != nil {
 		return err
@@ -44,18 +44,18 @@ func CopyDirectory(scrDir, dest string) error {
 
 		switch fileInfo.Mode() & os.ModeType {
 		case os.ModeDir:
-			if err := CreateIfNotExists(destPath, 0755); err != nil {
+			if err := FSCreateIfNotExists(destPath, 0755); err != nil {
 				return err
 			}
-			if err := CopyDirectory(sourcePath, destPath); err != nil {
+			if err := FSCopyDirectory(sourcePath, destPath); err != nil {
 				return err
 			}
 		case os.ModeSymlink:
-			if err := CopySymLink(sourcePath, destPath); err != nil {
+			if err := FSCopySymLink(sourcePath, destPath); err != nil {
 				return err
 			}
 		default:
-			if err := CopyFile(sourcePath, destPath); err != nil {
+			if err := FSCopyFile(sourcePath, destPath); err != nil {
 				return err
 			}
 		}
@@ -74,7 +74,7 @@ func CopyDirectory(scrDir, dest string) error {
 	return nil
 }
 
-func CopyFile(srcFile, dstFile string) error {
+func FSCopyFile(srcFile, dstFile string) error {
 	out, err := os.Create(dstFile)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func CopyFile(srcFile, dstFile string) error {
 	return nil
 }
 
-func Exists(filePath string) bool {
+func FSExists(filePath string) bool {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return false
 	}
@@ -104,8 +104,8 @@ func Exists(filePath string) bool {
 	return true
 }
 
-func CreateIfNotExists(dir string, perm os.FileMode) error {
-	if Exists(dir) {
+func FSCreateIfNotExists(dir string, perm os.FileMode) error {
+	if FSExists(dir) {
 		return nil
 	}
 
@@ -116,7 +116,7 @@ func CreateIfNotExists(dir string, perm os.FileMode) error {
 	return nil
 }
 
-func CopySymLink(source, dest string) error {
+func FSCopySymLink(source, dest string) error {
 	link, err := os.Readlink(source)
 	if err != nil {
 		return err
@@ -124,17 +124,48 @@ func CopySymLink(source, dest string) error {
 	return os.Symlink(link, dest)
 }
 
-func Copy(path string, newPath string) error {
+func FSCopy(path string, newPath string) error {
 	fileOrFolder, err := os.Stat(path)
 	if err != nil {
 		return err
 	}
 	switch fileOrFolder.Mode() {
 	case os.ModeDir:
-		return CopyDirectory(path, newPath)
+		return FSCopyDirectory(path, newPath)
 	case os.ModeSymlink:
-		return CopySymLink(path, newPath)
+		return FSCopySymLink(path, newPath)
 	default:
-		return CopyFile(path, newPath)
+		return FSCopyFile(path, newPath)
 	}
+}
+
+func FSCreateEmptyFile(path string) error {
+	return ioutil.WriteFile(path, nil, 0)
+}
+
+func FSWriteFile(path string, value string) error {
+	return ioutil.WriteFile(path, []byte(value), 0)
+}
+
+func FSReadFile(path string) (string, error) {
+	fileBytes, readFileError := ioutil.ReadFile(path)
+	if readFileError != nil {
+		return "", readFileError
+	}
+	return string(fileBytes), nil
+}
+
+func FSCreateFolder(path string) error {
+	_, statError := os.Stat(path)
+
+	if os.IsNotExist(statError) {
+		mkdirError := os.MkdirAll(path, 0755)
+		return mkdirError
+
+	}
+	return statError
+}
+
+func FSDelete(path string) error {
+	return os.RemoveAll(path)
 }

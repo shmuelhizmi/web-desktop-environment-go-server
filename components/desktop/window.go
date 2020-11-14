@@ -1,7 +1,6 @@
 package desktop
 
 import (
-	"encoding/json"
 	react_fullstack_go_server "github.com/shmuelhizmi/react-fullstack-go-server"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
 )
@@ -28,13 +27,11 @@ func CreateWindow(input types.CreateWindowParameters) types.CreateWindowReturn {
 				}
 			}
 			updateWindowParamsFromSettingsManager()
-			windowView.On("setWindowState", func(props [][]byte) interface{} {
-				var newWindowState struct {
-					Minimized bool           `json:"minimized"`
-					Position  types.Position `json:"position"`
-					Size      types.Size     `json:"size"`
-				}
-				json.Unmarshal(props[0], &newWindowState)
+			windowView.On("setWindowState", func(newWindowState struct {
+				Minimized bool           `json:"minimized"`
+				Position  types.Position `json:"position"`
+				Size      types.Size     `json:"size"`
+			}) interface{} {
 				windowState.Position = newWindowState.Position
 				windowState.Height = newWindowState.Size.Height
 				windowState.Width = newWindowState.Size.Width
@@ -48,7 +45,7 @@ func CreateWindow(input types.CreateWindowParameters) types.CreateWindowReturn {
 					updateWindowParamsFromSettingsManager()
 				}
 			})
-			windowView.On("onClose", func(_ [][]byte) interface{} {
+			windowView.On("onClose", func() interface{} {
 				input.DesktopManager.ApplicationsManager.CancelApp(input.AppId)
 				return nil
 			})

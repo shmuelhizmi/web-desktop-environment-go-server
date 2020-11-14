@@ -13,9 +13,6 @@ import (
 	"net/http"
 )
 
-type DesktopApp struct {
-}
-
 func main() {
 
 	server := gosocketio.NewServer(transport.GetDefaultWebsocketTransport())
@@ -25,6 +22,9 @@ func main() {
 	desktopManager.SettingsManager.Initialize()
 
 	desktopManager.ApplicationsManager.RegisterApp(apps.GetExplorerAppInfo().Name, apps.CreateExplorerApp())
+	desktopManager.ApplicationsManager.RegisterApp(apps.GetNotepadAppInfo().Name, apps.CreateNotepadApp())
+	desktopManager.ApplicationsManager.RegisterApp(apps.GetSettingsAppInfo().Name, apps.CreateSettingsApp())
+	desktopManager.ApplicationsManager.RegisterApp(apps.GetTerminalAppInfo().Name, apps.CreateTerminalApp())
 
 	mainLogger := desktopManager.MountLogger("main", color.FgHiRed)
 

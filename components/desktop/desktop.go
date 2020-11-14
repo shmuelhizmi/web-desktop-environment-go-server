@@ -1,7 +1,6 @@
 package desktop
 
 import (
-	"encoding/json"
 	"github.com/fatih/color"
 	react_fullstack_go_server "github.com/shmuelhizmi/react-fullstack-go-server"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
@@ -55,19 +54,14 @@ func CreateDesktop(desktopManager types.DesktopManager) react_fullstack_go_serve
 			desktop.Params["nativeBackground"] = settings.Desktop.NativeBackground
 		}
 		updateDesktopParamsFromSettingsManager()
-		desktop.On("onLaunchApp", func(props [][]byte) interface{} {
-			var app struct {
-				App    string      `json:"flow"`
-				Params interface{} `json:"params"` // deprecated
-			}
-			json.Unmarshal(props[0], &app)
+		desktop.On("onLaunchApp", func(app struct {
+			App    string      `json:"flow"`
+			Params interface{} `json:"params"` // deprecated
+		}) {
 			desktopLogger.Info("launching app " + app.App)
 			desktopManager.ApplicationsManager.RunApp(app.App, desktopManager, nil)
-			return nil
 		})
-		desktop.On("onCloseApp", func(params [][]byte) interface{} {
-			var appId int64
-			json.Unmarshal(params[0], &appId)
+		desktop.On("onCloseApp", func(appId int64) interface{} {
 			desktopManager.ApplicationsManager.CancelApp(appId)
 			return nil
 		})
