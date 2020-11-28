@@ -1,6 +1,6 @@
 package types
 
-type SettingsManger struct {
+type SettingsManager struct {
 	Initialize          func()
 	IsInitialized       *bool
 	Settings            func() *SettingsObject

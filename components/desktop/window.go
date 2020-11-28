@@ -15,12 +15,19 @@ func CreateWindow(input types.CreateWindowParameters) types.CreateWindowReturn {
 		Component: func(params *react_fullstack_go_server.ComponentParams) {
 			isCanceled := false
 			windowState := input.State
-			windowView := params.View(0, "Window", nil)
+			themeProvider := params.View(0, "ThemeProvider", nil)
+			settings := input.DesktopManager.SettingsManager.Settings()
+			updateThemeProviderParamsFromSettings := func() {
+				themeProvider.Params["theme"] = settings.Desktop.Theme
+				themeProvider.Params["CustomTheme"] = settings.Desktop.CustomTheme
+			}
+			updateThemeProviderParamsFromSettings()
+			themeProvider.Start()
+			windowView := params.View(0, "Window", &themeProvider)
 			windowView.Params["name"] = input.Name
 			windowView.Params["icon"] = input.Icon
 			windowView.Params["title"] = input.Title
 			windowView.Params["window"] = windowState
-			settings := input.DesktopManager.SettingsManager.Settings()
 			updateWindowParamsFromSettingsManager := func() {
 				if !isCanceled {
 					windowView.Params["background"] = settings.Desktop.Background
@@ -43,6 +50,9 @@ func CreateWindow(input types.CreateWindowParameters) types.CreateWindowReturn {
 			input.DesktopManager.SettingsManager.ListenToNewSettings(func(_ *types.SettingsObject) {
 				if !isCanceled {
 					updateWindowParamsFromSettingsManager()
+					updateThemeProviderParamsFromSettings()
+					themeProvider.Update()
+					windowView.Update()
 				}
 			})
 			windowView.On("onClose", func() interface{} {

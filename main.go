@@ -20,6 +20,7 @@ func main() {
 	desktopManager := managers.CreateDesktopManager()
 
 	desktopManager.SettingsManager.Initialize()
+	_ = desktopManager.DownloadManager.Initialize()
 
 	desktopManager.ApplicationsManager.RegisterApp(apps.GetExplorerAppInfo().Name, apps.CreateExplorerApp())
 	desktopManager.ApplicationsManager.RegisterApp(apps.GetNotepadAppInfo().Name, apps.CreateNotepadApp())

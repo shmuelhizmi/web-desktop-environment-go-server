@@ -39,13 +39,13 @@ func CreateExplorerApp() types.AppRegistrationData {
 		},
 		Description: info.Description,
 		App: func(desktopManager types.DesktopManager, appId int64, input interface{}) (component react_fullstack_go_server.Component) {
-			var explorerInput types.ExplorerInput = input.(types.ExplorerInput)
+			explorerInput := input.(types.ExplorerInput)
 			window := desktop.CreateWindow(types.CreateWindowParameters{
 				Name:  info.Name,
 				Title: info.Name,
 				Icon:  info.Icon,
 				State: types.WindowState{
-					Width:     720,
+					Width:     780,
 					MaxWidth:  1200,
 					MinWidth:  600,
 					Height:    600,
@@ -96,13 +96,15 @@ func ExplorerApp(desktopManager types.DesktopManager, input types.ExplorerInput)
 				logger.Error(copyError.Error())
 			}
 		})
-		explorerView.On("onRequestDownloadLink", func() interface{} {
+		explorerView.On("onRequestDownloadLink", func(path string) interface{} {
+			port := desktopManager.DownloadManager.Port
+			fileHash := desktopManager.DownloadManager.AddFile(path)
 			return struct {
 				Path string `json:"path"`
 				Port int32  `json:"port"`
 			}{
-				Path: "/fwafafwawaf",
-				Port: 0,
+				Path: "/" + fileHash,
+				Port: *port,
 			}
 		})
 		explorerView.On("onCreateFile", func(path string) {

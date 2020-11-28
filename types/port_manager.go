@@ -1,8 +1,8 @@
 package types
 
-type PortMangerDependencies struct {
+type PortManagerDependencies struct {
 	Logger          Logger
-	SettingsManager SettingsManger
+	SettingsManager SettingsManager
 }
 
 type PortManager struct {

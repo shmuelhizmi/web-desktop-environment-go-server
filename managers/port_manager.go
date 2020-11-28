@@ -8,7 +8,7 @@ import (
 	"net"
 )
 
-func CreatePortManager(dependencies types.PortMangerDependencies) types.PortManager {
+func CreatePortManager(dependencies types.PortManagerDependencies) types.PortManager {
 	logger := dependencies.Logger.Mount("port manager", color.FgRed)
 	isPortAvailable := func(port string) bool {
 		ln, err := net.Listen("tcp", ":"+port)

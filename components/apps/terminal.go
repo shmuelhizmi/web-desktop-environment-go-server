@@ -39,8 +39,8 @@ func CreateTerminalApp() types.AppRegistrationData {
 		NativeIcon: info.NativeIcon,
 		Name:       info.Name,
 		DefaultInput: types.TerminalInput{
-			Process:  "/usr/bin/bash",
-			Argument: "",
+			Process:  "/bin/bash",
+			Argument: make([]string, 0),
 			Location: home,
 		},
 		Description: info.Description,

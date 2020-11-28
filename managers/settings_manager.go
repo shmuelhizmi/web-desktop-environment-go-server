@@ -22,7 +22,7 @@ func CreateSettingsUpdater(write <-chan types.SettingsObject, settingsFileFullPa
 	}
 }
 
-func CreateSettingsManager(dependencies types.SettingsManagerDependencies) types.SettingsManger {
+func CreateSettingsManager(dependencies types.SettingsManagerDependencies) types.SettingsManager {
 	logger := dependencies.Logger.Mount("settings manager", color.FgHiMagenta)
 	defaultSettings := types.SettingsObject{
 		Desktop: types.SettingsObjectDesktop{
@@ -46,7 +46,7 @@ func CreateSettingsManager(dependencies types.SettingsManagerDependencies) types
 	settingsFileFullPath := path.Join(settingsFolderFullPath, types.SettingsFile)
 	settingsWriteChannel := make(chan types.SettingsObject)
 	go CreateSettingsUpdater(settingsWriteChannel, settingsFileFullPath)
-	return types.SettingsManger{
+	return types.SettingsManager{
 		Initialize: func() {
 			_, folderStatErr := os.Stat(settingsFolderFullPath)
 			utils.Check(folderStatErr)

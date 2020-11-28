@@ -13,11 +13,22 @@ type TerminalInstance struct {
 	Exit           func()
 }
 
-func CreatePtyInstance(process string, arguments string, location string, logger types.Logger) (TerminalInstance, error) {
-	c := exec.Command(process, arguments)
-
+func CreatePtyInstance(process string, arguments []string, location string, logger types.Logger) (TerminalInstance, error) {
+	processCMD := exec.Cmd{
+		Path:         process,
+		Args:         arguments,
+		Env:          nil,
+		Dir:          location,
+		Stdin:        nil,
+		Stdout:       nil,
+		Stderr:       nil,
+		ExtraFiles:   nil,
+		SysProcAttr:  nil,
+		Process:      nil,
+		ProcessState: nil,
+	}
 	// Start the command with a pty.
-	ptyProcess, err := pty.Start(c)
+	ptyProcess, err := pty.Start(&processCMD)
 	if err != nil {
 		return TerminalInstance{}, err
 	}
@@ -59,8 +70,5 @@ func CreatePtyInstance(process string, arguments string, location string, logger
 			}
 		},
 	}
-	// TO DO: make better implementation
-	instance.Write("cd " + location + "\n")
-	instance.Write("cd " + location + "\n")
 	return instance, nil
 }
