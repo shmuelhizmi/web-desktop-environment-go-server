@@ -13,6 +13,16 @@ type RunningAppData struct {
 
 type App func(desktopManager DesktopManager, AppId int64, input interface{}) (component react_fullstack_go_server.Component)
 
+type CustomAppRegistrationData struct {
+	Icon        Icon            `json:"icon"`
+	NativeIcon  NativeIcon      `json:"nativeIcon"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	Window      CustomAppWindow `json:"window"`
+	Permissions []VMPermission  `json:"permissions"`
+	Script      string          `json:"script"`
+}
+
 type AppRegistrationData struct {
 	Icon         Icon
 	NativeIcon   NativeIcon

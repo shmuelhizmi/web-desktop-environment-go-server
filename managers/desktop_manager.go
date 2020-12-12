@@ -18,11 +18,18 @@ func CreateDesktopManager() types.DesktopManager {
 		Logger:      rootLogger,
 		PortManager: portManager,
 	})
+	vmsManager := CreateVMSManager(types.VMSManagerDependencies{
+		Logger:              rootLogger,
+		PortManager:         portManager,
+		SettingsManager:     settingsManager,
+		ApplicationsManager: applicationsManager,
+	})
 	return types.DesktopManager{
 		PortManager:         portManager,
 		SettingsManager:     settingsManager,
 		MountLogger:         rootLogger.Mount,
 		ApplicationsManager: applicationsManager,
 		DownloadManager:     downloadManager,
+		VMSManager:          vmsManager,
 	}
 }

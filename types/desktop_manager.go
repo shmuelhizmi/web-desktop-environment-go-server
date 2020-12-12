@@ -9,5 +9,6 @@ type DesktopManager struct {
 	SettingsManager     SettingsManager
 	ApplicationsManager ApplicationsManager
 	DownloadManager     DownloadManager
+	VMSManager          VMSManager
 	MountLogger         func(levelName string, levelColor ...color.Attribute) Logger
 }

@@ -13,6 +13,13 @@ type WindowState struct {
 	Position  Position `json:"position"`
 }
 
+type CustomAppWindow struct {
+	Name  string      `json:"name"`
+	Title string      `json:"title"`
+	Icon  Icon        `json:"icon"`
+	State WindowState `json:"state"`
+}
+
 type CreateWindowParameters struct {
 	Name           string
 	Title          string
