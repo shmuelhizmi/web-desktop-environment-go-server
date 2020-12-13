@@ -5,7 +5,7 @@ import (
 )
 
 type RunningAppData struct {
-	AppPort    int32
+	AppPath    string
 	Name       string
 	Icon       Icon
 	NativeIcon NativeIcon
@@ -24,7 +24,7 @@ type AppRegistrationData struct {
 
 type OpenApp struct {
 	Name       string     `json:"name"`
-	Port       int32      `json:"port"`
+	Path       string     `json:"path"`
 	Icon       Icon       `json:"icon"`
 	NativeIcon NativeIcon `json:"nativeIcon"`
 	Id         int64      `json:"id"`

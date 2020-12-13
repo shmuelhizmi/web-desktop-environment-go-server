@@ -56,7 +56,7 @@ func TestSettingsCanGetUpdated(t *testing.T) {
 	}
 }
 
-func TestSettingsMangerCanSubscribeYouToASaveEvent(t *testing.T)  {
+func TestSettingsManagerCanSubscribeYouToASaveEvent(t *testing.T)  {
 	desktopManager := managers.CreateDesktopManager()
 	desktopManager.SettingsManager.Initialize()
 	successfullyGotSubscribed := 0

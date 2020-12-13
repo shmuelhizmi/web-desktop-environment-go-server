@@ -97,14 +97,11 @@ func ExplorerApp(desktopManager types.DesktopManager, input types.ExplorerInput)
 			}
 		})
 		explorerView.On("onRequestDownloadLink", func(path string) interface{} {
-			port := desktopManager.DownloadManager.Port
 			fileHash := desktopManager.DownloadManager.AddFile(path)
 			return struct {
 				Path string `json:"path"`
-				Port int32  `json:"port"`
 			}{
-				Path: "/" + fileHash,
-				Port: *port,
+				Path: *desktopManager.DownloadManager.Path + fileHash,
 			}
 		})
 		explorerView.On("onCreateFile", func(path string) {

@@ -9,20 +9,23 @@ import (
 func CreateDesktopManager() types.DesktopManager {
 	rootLogger := utils.CreateRootLogger().Mount("desktop manager", color.FgGreen)
 	settingsManager := CreateSettingsManager(types.SettingsManagerDependencies{Logger: rootLogger})
-	portManager := CreatePortManager(types.PortManagerDependencies{Logger: rootLogger, SettingsManager: settingsManager})
+	networkManger := CreateNetworkManager(types.NetworkManagerDependencies{
+		SettingsManager: settingsManager,
+		Logger:          rootLogger,
+	})
 	applicationsManager := CreateApplicationsManager(types.ApplicationsManagerDependencies{
-		PortManager: portManager,
-		Logger:      rootLogger,
+		Logger:         rootLogger,
+		NetworkManager: networkManger,
 	})
 	downloadManager := CreateDownloadManager(types.DownloadManagerDependencies{
-		Logger:      rootLogger,
-		PortManager: portManager,
+		Logger:         rootLogger,
+		NetworkManager: networkManger,
 	})
 	return types.DesktopManager{
-		PortManager:         portManager,
 		SettingsManager:     settingsManager,
 		MountLogger:         rootLogger.Mount,
 		ApplicationsManager: applicationsManager,
 		DownloadManager:     downloadManager,
+		NetworkManager:      networkManger,
 	}
 }

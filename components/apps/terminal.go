@@ -8,7 +8,6 @@ import (
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/components/desktop"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/utils"
-	"net/http"
 	"os"
 )
 
@@ -80,34 +79,23 @@ func TerminalApp(desktopManager types.DesktopManager, input types.TerminalInput,
 			desktopManager.ApplicationsManager.CancelApp(appId)
 			logger.Error("fail to start terminal instance - closing app")
 		} else {
-			getSocketPortError, socketServerPort := desktopManager.PortManager.GetAppPort()
-			if getSocketPortError != nil {
-				desktopManager.ApplicationsManager.CancelApp(appId)
-				logger.Error("fail to get port for terminal app - closing app")
-			} else {
-				server := gosocketio.NewServer(transport.GetDefaultWebsocketTransport())
-				serveMux := http.NewServeMux()
-				serveMux.Handle("/socket.io/", server)
-				go func() {
-					socketServerListenError := http.ListenAndServe(":"+utils.Int32ToString(socketServerPort), serveMux)
-					if socketServerListenError != nil {
-						desktopManager.ApplicationsManager.CancelApp(appId)
-						logger.Error("fail to create socket server for terminal app - closing app")
-					}
-				}()
-				history := ""
-				server.On(gosocketio.OnConnection, func(sender *gosocketio.Channel) {
-					sender.Emit("output", history)
-				})
-				server.On("input", func(sender *gosocketio.Channel, input string) {
-					terminalInstance.Write(input)
-				})
-				terminalInstance.ListenToOutput(func(newOutput string) {
-					server.BroadcastToAll("output", newOutput)
-					history += newOutput
-				})
-				terminalView.Params["port"] = socketServerPort
-			}
+			socketServerPath := desktopManager.NetworkManager.GetServicePath("terminal")
+			server := gosocketio.NewServer(transport.GetDefaultWebsocketTransport())
+			serveMux := desktopManager.NetworkManager.Server
+			serveMux.Handle("/socket.io" + socketServerPath, server)
+			history := ""
+			server.On(gosocketio.OnConnection, func(sender *gosocketio.Channel) {
+				sender.Emit("output", history)
+			})
+			server.On("input", func(sender *gosocketio.Channel, input string) {
+				terminalInstance.Write(input)
+			})
+			terminalInstance.ListenToOutput(func(newOutput string) {
+				server.BroadcastToAll("output", newOutput)
+				history += newOutput
+			})
+			terminalView.Params["path"] = socketServerPath
+
 		}
 		terminalView.Start()
 		<-params.Cancel

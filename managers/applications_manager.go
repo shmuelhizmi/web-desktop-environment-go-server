@@ -7,9 +7,6 @@ import (
 	"github.com/graarh/golang-socketio/transport"
 	react_fullstack_go_server "github.com/shmuelhizmi/react-fullstack-go-server"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/types"
-	"log"
-	"net/http"
-	"strconv"
 )
 
 func CreateApplicationsManager(dependencies types.ApplicationsManagerDependencies) (appManager types.ApplicationsManager) {
@@ -39,10 +36,7 @@ func CreateApplicationsManager(dependencies types.ApplicationsManagerDependencie
 			}
 			appId := appIndex
 			appIndex++
-			getAppPortError, appPort := dependencies.PortManager.GetAppPort()
-			if getAppPortError != nil {
-				return nil, getAppPortError
-			}
+			appMountPath := dependencies.NetworkManager.GetAppPath(name)
 			appDesktopManager := desktopManager
 			appDesktopManager.MountLogger = logger.Mount
 			appComponent := app.App(appDesktopManager, appId, appInput)
@@ -58,7 +52,7 @@ func CreateApplicationsManager(dependencies types.ApplicationsManagerDependencie
 			}
 			runningApp := types.AppInstance{
 				AppData: types.RunningAppData{
-					AppPort:    appPort,
+					AppPath:    appMountPath,
 					Name:       app.Name,
 					Icon:       app.Icon,
 					NativeIcon: app.NativeIcon,
@@ -77,16 +71,9 @@ func CreateApplicationsManager(dependencies types.ApplicationsManagerDependencie
 			}
 			runningApps = append(runningApps, runningApp)
 			callAppRunningAppsUpdateListeners()
-			serveMux := http.NewServeMux()
-			serveMux.Handle("/socket.io/", appServer)
-			for http.ListenAndServe(":"+strconv.FormatInt(int64(appPort), 10), serveMux) != nil {
-				noPortAvailableError, newPort := desktopManager.PortManager.GetAppPort()
-				appPort = newPort
-				if noPortAvailableError != nil {
-					return nil, noPortAvailableError
-				}
-			}
-			log.Panic()
+			serveMux := dependencies.NetworkManager.Server
+			serveMux.Handle("/socket.io" + appMountPath, appServer)
+			logger.Info("starting app " + app.Name + "on " + appMountPath)
 			return appInstance, nil
 		},
 		CancelApp: func(id int64) {

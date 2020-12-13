@@ -10,7 +10,7 @@ type ApplicationsManager struct {
 }
 
 type ApplicationsManagerDependencies struct {
-	PortManager PortManager
+	NetworkManager NetworkManager
 	Logger      Logger
 }
 

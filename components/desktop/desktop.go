@@ -13,7 +13,7 @@ func CreateDesktop(desktopManager types.DesktopManager) react_fullstack_go_serve
 		themeProvider := params.View(0, "ThemeProvider", nil)
 		updateThemeProviderParamsFromSettings := func() {
 			themeProvider.Params["theme"] = settings.Desktop.Theme
-			themeProvider.Params["CustomTheme"] = settings.Desktop.CustomTheme
+			themeProvider.Params["customTheme"] = settings.Desktop.CustomTheme
 		}
 		updateThemeProviderParamsFromSettings()
 		themeProvider.Start()
@@ -39,7 +39,7 @@ func CreateDesktop(desktopManager types.DesktopManager) react_fullstack_go_serve
 			for _, app := range *runningApps {
 				openApps = append(openApps, types.OpenApp{
 					Name:       app.AppData.Name,
-					Port:       app.AppData.AppPort,
+					Path:       app.AppData.AppPath,
 					Icon:       app.AppData.Icon,
 					NativeIcon: app.AppData.NativeIcon,
 					Id:         app.Id,

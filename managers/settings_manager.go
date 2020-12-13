@@ -33,8 +33,6 @@ func CreateSettingsManager(dependencies types.SettingsManagerDependencies) types
 		Network: types.SettingsObjectNetwork{
 			Ports: types.SettingsObjectNetworkPorts{
 				MainPort:  5000,
-				StartPort: 9200,
-				EndPort:   9400,
 			},
 		},
 	}

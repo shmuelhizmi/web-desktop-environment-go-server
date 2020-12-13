@@ -35,6 +35,4 @@ type SettingsObjectNetwork struct {
 
 type SettingsObjectNetworkPorts struct {
 	MainPort  int32 `json:"mainPort"`
-	StartPort int32 `json:"startPort"`
-	EndPort   int32 `json:"endPort"`
 }

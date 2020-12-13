@@ -9,8 +9,7 @@ import (
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/components/desktop"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/managers"
 	"github.com/shmuelhizmi/web-desktop-environment-go-server/utils"
-	"log"
-	"net/http"
+	"time"
 )
 
 func main() {
@@ -20,6 +19,7 @@ func main() {
 	desktopManager := managers.CreateDesktopManager()
 
 	desktopManager.SettingsManager.Initialize()
+	desktopManager.NetworkManager.Initialize()
 	_ = desktopManager.DownloadManager.Initialize()
 
 	desktopManager.ApplicationsManager.RegisterApp(apps.GetExplorerAppInfo().Name, apps.CreateExplorerApp())
@@ -29,18 +29,17 @@ func main() {
 
 	mainLogger := desktopManager.MountLogger("main", color.FgHiRed)
 
-	getDesktopPortError, desktopPort := desktopManager.PortManager.GetDesktopPort()
+	serveMux := desktopManager.NetworkManager.Server
 
-	if getDesktopPortError != nil {
-		mainLogger.Error("we cloud not found open port to run desktop on")
-		panic(getDesktopPortError)
-	}
-
-	mainLogger.Info("running app desktop on port " + utils.Int32ToString(desktopPort))
+	mainLogger.Info(
+		"running app desktop on port " +
+			utils.Int32ToString(desktopManager.SettingsManager.Settings().Network.Ports.MainPort) +
+			" and path /socket.io/desktop/")
 
 	react_fullstack_go_server.App(server, desktop.CreateDesktop(desktopManager))
 
-	serveMux := http.NewServeMux()
-	serveMux.Handle("/socket.io/", server)
-	log.Panic(http.ListenAndServe(":"+utils.Int32ToString(desktopPort), serveMux))
+	serveMux.Handle("/socket.io/desktop/", server)
+	for true {
+		time.Sleep(time.Hour)
+	}
 }

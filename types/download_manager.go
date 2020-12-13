@@ -1,12 +1,12 @@
 package types
 
 type DownloadManagerDependencies struct {
-	Logger      Logger
-	PortManager PortManager
+	Logger         Logger
+	NetworkManager NetworkManager
 }
 
 type DownloadManager struct {
 	AddFile    func(path string) (hash string)
-	Port       *int32
+	Path       *string
 	Initialize func() (initializationError error)
 }

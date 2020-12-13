@@ -5,8 +5,8 @@ import (
 )
 
 type DesktopManager struct {
-	PortManager         PortManager
 	SettingsManager     SettingsManager
+	NetworkManager      NetworkManager
 	ApplicationsManager ApplicationsManager
 	DownloadManager     DownloadManager
 	MountLogger         func(levelName string, levelColor ...color.Attribute) Logger

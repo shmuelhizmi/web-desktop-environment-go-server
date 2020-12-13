@@ -19,7 +19,7 @@ func CreateWindow(input types.CreateWindowParameters) types.CreateWindowReturn {
 			settings := input.DesktopManager.SettingsManager.Settings()
 			updateThemeProviderParamsFromSettings := func() {
 				themeProvider.Params["theme"] = settings.Desktop.Theme
-				themeProvider.Params["CustomTheme"] = settings.Desktop.CustomTheme
+				themeProvider.Params["customTheme"] = settings.Desktop.CustomTheme
 			}
 			updateThemeProviderParamsFromSettings()
 			themeProvider.Start()
